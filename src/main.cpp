@@ -36,8 +36,8 @@ unsigned int nTransactionsUpdated = 0;
 map<uint256, CBlockIndex*> mapBlockIndex;
 set<pair<COutPoint, unsigned int> > setStakeSeen;
 uint256 hashGenesisBlock = hashGenesisBlockOfficial;
-static CBigNum bnProofOfWorkLimit(~uint256(0) >> 32);
-static CBigNum bnInitialHashTarget(~uint256(0) >> 40);
+static CBigNum bnProofOfWorkLimit(~uint256(0) >> 16);
+static CBigNum bnInitialHashTarget(~uint256(0) >> 20);
 unsigned int nStakeMinAge = STAKE_MIN_AGE;
 int nCoinbaseMaturity = COINBASE_MATURITY_PPC;
 CBlockIndex* pindexGenesisBlock = NULL;
@@ -2381,7 +2381,7 @@ bool CBlock::CheckBlock(CValidationState &state, bool fCheckPOW, bool fCheckMerk
         return error("CheckBlock() : coinbase output not empty for proof-of-stake block");
 
     // Check coinbase timestamp
-    if (GetBlockTime() > (int64)vtx[0].nTime + nMaxClockDrift)
+    if (!fTestNet && GetBlockTime() > (int64)vtx[0].nTime + nMaxClockDrift)
         return state.DoS(50, error("CheckBlock() : coinbase timestamp is too early"));
 
     // Check coinstake timestamp
@@ -2454,7 +2454,8 @@ bool CBlock::AcceptBlock(CValidationState &state, CDiskBlockPos *dbp)
             return state.DoS(10, error("AcceptBlock() : prev block not found"));
         pindexPrev = (*mi).second;
         nHeight = pindexPrev->nHeight+1;
-
+        if (IsProofOfWork() && nHeight > LAST_POW_BLOCK)
+            return state.DoS(100, error("AcceptBlock() : reject proof-of-work at height %d", nHeight));
         // Check proof-of-work or proof-of-stake
         if (nBits != GetNextTargetRequired(pindexPrev, IsProofOfStake()))
             return state.DoS(100, error("AcceptBlock() : incorrect proof-of-work/proof-of-stake"));
@@ -3222,10 +3223,10 @@ bool LoadBlockIndex()
         nModifierInterval = 60 * 20; // test net modifier interval is 20 minutes
 #else
         hashGenesisBlock = hashGenesisBlockTestNet;
-        bnProofOfWorkLimit = CBigNum(~uint256(0) >> 28);
+        bnProofOfWorkLimit = CBigNum(~uint256(0) >> 24);
         nStakeMinAge = 60 * 60 * 24; // test net min age is 1 day
         nCoinbaseMaturity = 60;
-        bnInitialHashTarget = CBigNum(~uint256(0) >> 29);
+        bnInitialHashTarget = CBigNum(~uint256(0) >> 30);
         nModifierInterval = 60 * 20; // test net modifier interval is 20 minutes
 #endif
     }
@@ -3255,15 +3256,20 @@ bool InitBlockIndex() {
 
     // Only add the genesis block if not reindexing (in which case we reuse the one already on disk)
     if (!fReindex) {
-        // Genesis Block:
-        // CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
-        //   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-        //     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
-        //     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
-        //   vMerkleTree: 4a5e1e
-
+        
         // Genesis block
-        const char* pszTimestamp = "Matonis 07-AUG-2012 Parallel Currencies And The Roadmap To Monetary Freedom";
+        const char* pszTimestamp = "La série distribue les harmonies. Les attractions sont proportionnelles aux destinées.";
+        
+        /*
+        TESTNET genesis
+        
+        CBlock(hash=000000c8be368cb276c51e3a866ac9336f0252570ac1f11b6a51f48774e3c9ac, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=3a7dcafb6119a235e4581336c533cf77327d1a2da0c8a805b67918b895946867, nTime=1512052181, nBits=1e00ffff, nNonce=38462074, vtx=1, vchBlockSig=)
+        Coinbase(hash=3a7dcafb6119a235e4581336c533cf77327d1a2da0c8a805b67918b895946867, nTime=1345083810, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+        CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 04ffff001d020f274c584c612073c3a972696520646973747269627565206c6573206861726d6f6e6965732e204c65732061747472616374696f6e7320736f6e742070726f706f7274696f6e6e656c6c6573206175782064657374696ec3a965732e)
+        CTxOut(empty)
+        vMerkleTree: 3a7dcafb6119a235e4581336c533cf77327d1a2da0c8a805b67918b895946867
+        */
+
         CTransaction txNew;
         txNew.nTime = 1345083810;
         txNew.vin.resize(1);
@@ -3281,8 +3287,8 @@ bool InitBlockIndex() {
 
         if (fTestNet)
         {
-            block.nTime    = 1345090000;
-            block.nNonce   = 122894938;
+            block.nTime    = 1512052181;
+            block.nNonce   = 38462074;
         }
 
 #ifdef TESTING
@@ -3297,14 +3303,35 @@ bool InitBlockIndex() {
         }
 #endif
 
+        if (false  && (block.GetHash() != hashGenesisBlock))
+        {
+           printf("Mining genesis\n");
+           uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
+           while (block.GetHash() > hashTarget)
+           {
+               ++block.nNonce;
+               if (block.nNonce == 0)
+               {
+                   printf("NONCE WRAPPED, incrementing time");
+                   ++block.nTime;
+               }
+           if (block.nNonce % 10000 == 0) { 
+           printf("nonce %08u: hash = %s \n", block.nNonce, block.GetHash().ToString().c_str()); 
+           }
+        }
+    }
+
         //// debug print
-        uint256 hash = block.GetHash();
-        printf("%s\n", hash.ToString().c_str());
-        printf("%s\n", hashGenesisBlock.ToString().c_str());
-        printf("%s\n", block.hashMerkleRoot.ToString().c_str());
-        assert(block.hashMerkleRoot == uint256("0x3c2d8f85fab4d17aac558cc648a1a58acff0de6deb890c29985690052c5993c2"));
+        printf("My beautiful block hash %s\n", block.GetHash().ToString().c_str());
+        printf("hashGenesisBlock (hardcoded) %s\n", hashGenesisBlock.ToString().c_str());
+        printf("block merkle root %s\n", block.hashMerkleRoot.ToString().c_str());
+        assert(block.hashMerkleRoot == uint256("0x3a7dcafb6119a235e4581336c533cf77327d1a2da0c8a805b67918b895946867"));
+
         block.print();
-        assert(hash == hashGenesisBlock);
+        assert(block.GetHash() == hashGenesisBlock);
+        
+
+
         // ppcoin: check genesis block
         {
             CValidationState state;

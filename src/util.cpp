@@ -1488,7 +1488,7 @@ std::string FormatSubVersion(const std::string& name, int nClientVersion, const 
     if (!comments.empty())
         ss << "(" << boost::algorithm::join(comments, "; ") << ")";
     ss << "/";
-    ss << "Harmonian :" << FormatVersion(PEERCOIN_VERSION);
+    ss << "Harmonian :" << FormatVersion(HARMONIAN_VERSION);
     ss << "(" << CLIENT_BUILD << ")/";
     return ss.str();
 }

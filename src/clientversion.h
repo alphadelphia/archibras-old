@@ -15,10 +15,10 @@
 #define CLIENT_VERSION_IS_RELEASE  true
 
 // ppcoin version - intended for display purpose ONLY
-#define PEERCOIN_VERSION_MAJOR       0
-#define PEERCOIN_VERSION_MINOR       0
-#define PEERCOIN_VERSION_REVISION    0
-#define PEERCOIN_VERSION_BUILD       1
+#define HARMONIAN_VERSION_MAJOR       0
+#define HARMONIAN_VERSION_MINOR       0
+#define HARMONIAN_VERSION_REVISION    0
+#define HARMONIAN_VERSION_BUILD       1
 
 // Copyright year (2009-this)
 // Todo: update this when changing our copyright comments in the source
