@@ -3303,24 +3303,6 @@ bool InitBlockIndex() {
         }
 #endif
 
-        if (false  && (block.GetHash() != hashGenesisBlock))
-        {
-           printf("Mining genesis\n");
-           uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
-           while (block.GetHash() > hashTarget)
-           {
-               ++block.nNonce;
-               if (block.nNonce == 0)
-               {
-                   printf("NONCE WRAPPED, incrementing time");
-                   ++block.nTime;
-               }
-           if (block.nNonce % 10000 == 0) { 
-           printf("nonce %08u: hash = %s \n", block.nNonce, block.GetHash().ToString().c_str()); 
-           }
-        }
-    }
-
         //// debug print
         printf("My beautiful block hash %s\n", block.GetHash().ToString().c_str());
         printf("hashGenesisBlock (hardcoded) %s\n", hashGenesisBlock.ToString().c_str());

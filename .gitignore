@@ -1,12 +1,6 @@
-
 src/*.exe
 src/harmoniand
-src/ppcoin
-src/peercoin
-src/ppcoind
-src/peercoind
-src/test_ppcoin
-src/test_peercoin
+
 src/test_harmonian
 .*.swp
 *.*~*
@@ -16,29 +10,6 @@ src/test_harmonian
 *.o
 *.P
 *.patch
-.ppcoin
-.peercoin
-
-# Compilation and Qt preprocessor part
-*.qm
-Makefile
-ppcoin-qt
-peercoin-qt
-PPCoin-Qt.app
-Peercoin-Qt.app
-.qmake.stash
-peercoin-qt_plugin_import.cpp
-
-# Unit-tests
-Makefile.test
-ppcoin-qt_test
-peercoin-qt_test
-
-# Resources cpp
-qrc_*.cpp
-
-# Qt creator
-*.pro.user
 
 # Mac specific
 .DS_Store
@@ -49,5 +20,3 @@ release/
 *.Debug
 *.Release
 
-!src/leveldb-*/Makefile
-peercoin-qt
