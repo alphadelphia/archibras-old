@@ -39,7 +39,8 @@ uint256 hashGenesisBlock = hashGenesisBlockOfficial;
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 16);
 static CBigNum bnInitialHashTarget(~uint256(0) >> 20);
 unsigned int nStakeMinAge = STAKE_MIN_AGE;
-int nCoinbaseMaturity = fTestNet ? COINBASE_MATURITY_TESTNET : COINBASE_MATURITY_PPC;
+//int nCoinbaseMaturity = fTestNet ? COINBASE_MATURITY_TESTNET : COINBASE_MATURITY_PPC;
+int nCoinbaseMaturity = COINBASE_MATURITY_PPC;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 nBestChainTrust = 0;
@@ -1243,12 +1244,14 @@ unsigned int static GetNextTargetRequired(const CBlockIndex* pindexLast, bool fP
     CBigNum bnNew;
     int64 nTargetSpacing;
     bnNew.SetCompact(pindexPrev->nBits);
+    /*
     if (!fTestNet) {
         nTargetSpacing = fProofOfStake? STAKE_TARGET_SPACING : min(nTargetSpacingWorkMax, (int64) STAKE_TARGET_SPACING * (1 + pindexLast->nHeight - pindexPrev->nHeight));
     } else {
         nTargetSpacing = fProofOfStake? STAKE_TARGET_SPACING_TESTNET : min((int64) 12 * STAKE_TARGET_SPACING_TESTNET, (int64) STAKE_TARGET_SPACING_TESTNET * (1 + pindexLast->nHeight - pindexPrev->nHeight));
     }
-    
+    */
+    nTargetSpacing = fProofOfStake? STAKE_TARGET_SPACING : min(nTargetSpacingWorkMax, (int64) STAKE_TARGET_SPACING * (1 + pindexLast->nHeight - pindexPrev->nHeight));
     int64 nInterval = nTargetTimespan / nTargetSpacing;
     bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);
     bnNew /= ((nInterval + 1) * nTargetSpacing);
@@ -3220,21 +3223,12 @@ bool LoadBlockIndex()
 
     if (fTestNet)
     {
-#ifdef TESTING
-        hashGenesisBlock = uint256("00008d0d88095d31f6dbdbcf80f6e51f71adf2be15740301f5e05cc0f3b2d2c0");
+        hashGenesisBlock = hashGenesisBlockTestNet;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 15);
         nStakeMinAge = 60 * 60 * 24; // test net min age is 1 day
         nCoinbaseMaturity = 60;
         bnInitialHashTarget = CBigNum(~uint256(0) >> 15);
         nModifierInterval = 60 * 20; // test net modifier interval is 20 minutes
-#else
-        hashGenesisBlock = hashGenesisBlockTestNet;
-        bnProofOfWorkLimit = CBigNum(~uint256(0) >> 24);
-        nStakeMinAge = 60 * 60 * 24; // test net min age is 1 day
-        nCoinbaseMaturity = 60;
-        bnInitialHashTarget = CBigNum(~uint256(0) >> 30);
-        nModifierInterval = 60 * 20; // test net modifier interval is 20 minutes
-#endif
     }
 
     printf("%s Network: genesis=0x%s nBitsLimit=0x%08x nBitsInitial=0x%08x nStakeMinAge=%d nCoinbaseMaturity=%d nModifierInterval=%d\n",
