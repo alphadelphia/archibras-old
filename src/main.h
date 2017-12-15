@@ -82,8 +82,8 @@ static const int fHaveUPnP = false;
 
 //TODO the official has not been mined yet
 static const uint256 hashGenesisBlockOfficial("0x");
-static const uint256 hashGenesisBlockTestNet("0x000000c8be368cb276c51e3a866ac9336f0252570ac1f11b6a51f48774e3c9ac");
-
+//static const uint256 hashGenesisBlockTestNet("0x000000c8be368cb276c51e3a866ac9336f0252570ac1f11b6a51f48774e3c9ac");
+static const uint256 hashGenesisBlockTestNet("0x00005984cb45aa2885594686a43faa9b4c46511a431677dfc6d966cbaa8155e0");
 static const int64 nMaxClockDrift = 2 * 60 * 60;        // two hours
 
 extern CScript COINBASE_FLAGS;
