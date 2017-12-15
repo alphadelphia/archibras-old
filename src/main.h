@@ -63,8 +63,10 @@ static const int64 MAX_MINT_PROOF_OF_WORK = 9999 * COIN;
 static const int64 MIN_TXOUT_AMOUNT = MIN_TX_FEE;
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
 static const int COINBASE_MATURITY_PPC = 500;
+static const int COINBASE_MATURITY_TESTNET = 5;
 /** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
 static const int STAKE_TARGET_SPACING = 7 * 60; // 7-minute block spacing 
+static const int STAKE_TARGET_SPACING_TESTNET = 1 * 60; // 1-minute block spacing for testing 
 static const int STAKE_MIN_AGE = 60 * 60 * 24 * 30; // minimum age for coin age
 static const int STAKE_MAX_AGE = 60 * 60 * 24 * 90; // stake age of full weight
 /** Maximum number of script-checking threads allowed */
